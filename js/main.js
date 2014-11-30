@@ -31,6 +31,8 @@ var	p; // making it global, since enemies need the location
 
 var w; var h; // window-viewport dimensions
 
+var paused = false;
+
 
 // more
 var frame = 0;
@@ -42,9 +44,11 @@ var max_v2 = .4*.66;
 var active_keys = [];
 for (var i = 0; i < 100; i++) active_keys[i] = 0;
 
-
+// entry point after window has loaded
 $(window).load(function(){
 	init();
+	build_game_elements();
+	animate(); // last step... start game loop
 });
 
 
@@ -91,6 +95,10 @@ function init() {
 	camera.position.x = 0;
 	camera.position.y = 0;
 	camera.rotation.z = Math.PI;
+}
+
+
+function build_game_elements(){
 
 	p = new player();
 
@@ -98,33 +106,18 @@ function init() {
 	var e = [];
 	for (var i = 0; i < 10; i++){
 
-		var start_v = {x:r2(-.1,.1),y:r2(-.1,.1)};
-		var bullet_v = {x:r2(-1,1)*.3,y:r2(-1,1)*.3};
+		var start_v = {x:r(-.1,.1),y:r(-.1,.1)};
+		var bullet_v = {x:r(-1,1)*.3,y:r(-1,1)*.3};
 
-		var body_size = ri(1,5);
+		var body_size = ri(3,7);
 
 		var enemy_type = ri(1,4);
 
-		e[i] = new enemy(body_size,ri(2,e_bullet_mat.length-1),ri(3,15),bullet_v,ri(150,200),{x:r(.5*w),y:r(.5*h)}, start_v, enemy_type, 1);
+		e[i] = new enemy(body_size,ri(2,e_bullet_mat.length-1),ri(3,15),bullet_v,ri(150,200),{x:r(.05*w,-.05*w),y:r(.05*h,-.05*h)}, start_v, enemy_type, 1);
 	}
 
 	add_scene_objects();
 
-	animate(); // last step of init... start game loop
-}
-
-
-
-function r(x){
-	return (Math.random()-.5)*.1*x;
-}
-
-function r2(min, max) {
-    return Math.random() * (max - min) + min;
-}
-
-function ri(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 
@@ -150,154 +143,18 @@ function remove_scene_objects(){
 }
 
 
-
-function player(){
-
-	this.e = {body:0, bullets:[]};
-
-	var geometry = new THREE.PlaneGeometry( 2, 2 );
-	var plane = new THREE.Mesh( geometry, p_body_mat );
-
-	this.e.body = {b:plane, v:{x:0,y:0}, a:{x:0,y:0}, life:200};
-
-	this.e.body.b.position.x = 0;
-	this.e.body.b.position.y = 0;
-
-	this.e.body.v.x = 0
-	this.e.body.v.y = 0;
-
-	this.shot_timer = 0;
-
-	bullets_idx = 0;
-	bullets_max = 20; // going to need to recycle bullets... can't just create thousands and thousands
-
-	this.shoot = function(dir){
-
-
-		console.log('shot');
-		
-		this.e.
-		
-		bullet_v = 1;
-		//remove_scene_objects();
-	
-		this.e.bullets.push( {b:[], v:{x:0,y:0}, a:{x:0,y:0}, life:200} );
-
-		var geometry = new THREE.PlaneGeometry( 2, 2 );
-		var plane = new THREE.Mesh( geometry, p_bullet_mat );
-
-		this.e.bullets[bullets_idx].b = plane;
-
-		this.e.bullets[bullets_idx].b.position.x = this.e.body.b.position.x;
-		this.e.bullets[bullets_idx].b.position.y = this.e.body.b.position.y;
-		//this.e.bullets[i].v.x = this.e.body.v.x;
-		//this.e.bullets[i].v.y = this.e.body.v.y;
-
-		if (dir==0){
-			this.e.bullets[bullets_idx].v.x += 1;
-		} else if (dir==1){
-			this.e.bullets[bullets_idx].v.y -= 1;
-		} else if (dir==2){
-			this.e.bullets[bullets_idx].v.x -= 1;
-		} else if (dir==3){
-			this.e.bullets[bullets_idx].v.y += 1;
-		}
-		add_scene_objects();
-		this.shot_timer = 200;
-		bullets_idx ++;
-		
-		
-
-	}
-
-	scene_objects.push(this);
-}
-
-
-
-
-function enemy(body_size,bullet_size, num_bullets, bullet_v, frames_per_pulse, start_loc, start_v, shot_type, ai_type){
-
-	this.e = {body:0, bullets:[]};
-
-	this.frames_per_pulse = frames_per_pulse;
-	this.ai_type = ai_type;
-	this.bullet_size = bullet_size;
-
-	var geometry = new THREE.PlaneGeometry( body_size+1, body_size+1 );
-	var plane = new THREE.Mesh( geometry, e_body_mat[0] );
-
-	this.e.body = {b:plane, v:{x:0,y:0}, a:{x:0,y:0}, life:200};
-
-	this.e.body.b.position.x = start_loc.x;
-	this.e.body.b.position.y = start_loc.y;
-
-	this.e.body.v.x = start_v.x;
-	this.e.body.v.y = start_v.y;
-
-	this.shoot = function(){
-		remove_scene_objects();
-
-		rand_vel = r2(.01,.02);
-
-		for (var i = 0; i < num_bullets; i++){
-			this.e.bullets[i] = {b:[], v:{x:0,y:0}, a:{x:0,y:0}, life:200};
-
-			var geometry = new THREE.PlaneGeometry( this.bullet_size-.5, this.bullet_size-.5 );
-
-			var plane = new THREE.Mesh( geometry, e_bullet_mat[this.bullet_size] );
-
-			this.e.bullets[i].b = plane;
-
-			this.e.bullets[i].b.position.x = (this.e.body.b.position.x);
-			this.e.bullets[i].b.position.y = (this.e.body.b.position.y);
-
-
-			if (shot_type == 1){ // elipse
-				this.e.bullets[i].v.x = this.e.body.v.x + (Math.sin(2*Math.PI * i/num_bullets)*bullet_v.x);
-				this.e.bullets[i].v.y = this.e.body.v.y +(Math.cos(2*Math.PI * i/num_bullets)*bullet_v.y);
-			} else if (shot_type == 2){ // circle
-				this.e.bullets[i].v.x = this.e.body.v.x + (Math.sin(2*Math.PI * i/num_bullets)*bullet_v.x);
-				this.e.bullets[i].v.y = this.e.body.v.y +(Math.cos(2*Math.PI * i/num_bullets)*bullet_v.x);
-			} else if (shot_type == 3){ // line at player
-				dir_p = {x:0,y:0};
-				dir_p.x = (p.e.body.b.position.x - this.e.body.b.position.x);
-				dir_p.y = (p.e.body.b.position.y - this.e.body.b.position.y);
-				norm = Math.abs(Math.sqrt( (dir_p.x*dir_p.x + dir_p.y*dir_p.y) ));
-		
-				this.e.bullets[i].v.x = this.e.body.v.x + dir_p.x/norm*(i+1)*rand_vel;
-				this.e.bullets[i].v.y = this.e.body.v.y + dir_p.y/norm*(i+1)*rand_vel;
-			} else if (shot_type == 4){ // frayed line at player
-				dir_p = {x:0,y:0};
-				dir_p.x = p.e.body.b.position.x - this.e.body.b.position.x;
-				dir_p.y = p.e.body.b.position.y - this.e.body.b.position.y;
-				norm = Math.abs(Math.sqrt( (dir_p.x*dir_p.x + dir_p.y*dir_p.y) ));
-				this.e.bullets[i].v.x = this.e.body.v.x + dir_p.x/norm*(i*.01+.1) + r2(-1,1)*.05;
-				this.e.bullets[i].v.y = this.e.body.v.y + dir_p.y/norm*(i*.01+.1) + r2(-1,1)*.05;
-			} 
-
-
-
-
-		}
-		add_scene_objects();
-
-	}
-
-	scene_objects.push(this);
-
-}
-
-
-
 function animate() {
 	stats.begin();
 
-	frame++;
 
-	physics();
-	get_input();
-	renderer.render(scene, camera);
+	get_input()
+	if (!paused){
+		frame++;
+
+		// could have the render or physics happen at different frame rates...
+		if (frame%1==0) physics();
+		if (frame%1==0) renderer.render(scene, camera);
+	} 
 
     stats.end();
 	requestAnimationFrame(animate);
@@ -305,6 +162,9 @@ function animate() {
 
 
 function get_input(){
+
+	if (active_keys[27]) paused = !paused;
+	
 
     p.e.body.v.x = 0;
     p.e.body.v.y = 0;
@@ -331,7 +191,6 @@ function get_input(){
 	    if (active_keys[40]) p.shoot(3);
 	}
 
-
     if (active_keys[81]) camera.position.z -= 10;
     if (active_keys[69]) camera.position.z += 10;
 
@@ -341,7 +200,7 @@ function get_input(){
 function physics() {
 	for (var i = 0; i < scene_objects.length; i++){
 
-		// update enemy bodies
+		// update enemy bodies physics
 		s = scene_objects[i].e.body;
 		s.v.x += s.a.x;
 		s.v.y += s.a.y;
@@ -361,7 +220,6 @@ function physics() {
 			}
 
 		}
-
 
 		s.b.position.x += s.v.x;
 		s.b.position.y += s.v.y;
