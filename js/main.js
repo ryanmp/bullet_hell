@@ -12,16 +12,16 @@ var container, scene, camera, renderer, spheres, s, player; //s == rot speed
 // build materials
 
 var e_body_mat = [];
-for (var i = 0; i < e_body_tex.length; i++){
+var i = 0;
+for (i = 0; i < e_body_tex.length; i++){
 	e_body_mat.push(   new THREE.MeshBasicMaterial({ color: new THREE.Color( 1, .1, .1 ), map: e_body_tex[i], transparent: true })   );
 }
 
 var e_bullet_mat = [];
-for (var i = 0; i < e_bullet_tex.length; i++){
-	e_bullet_mat.push(   new THREE.MeshBasicMaterial({ color: new THREE.Color( .9, .6, 0 ), map: e_bullet_tex[i], transparent: true })   );
+for (i = 0; i < e_bullet_tex.length; i++){
+	e_bullet_mat.push(   new THREE.MeshBasicMaterial({ color: new THREE.Color( 1, .6, 0 ), map: e_bullet_tex[i], transparent: true })   );
 }
 
-var p_body_mat = new THREE.MeshBasicMaterial({ color: new THREE.Color( .3, .5, 1 ), map: p_body_tex, transparent: true });
 var p_bullet_mat = new THREE.MeshBasicMaterial({ color: new THREE.Color( 0, .9, .1 ), map: e_bullet_tex[1], transparent: true })  
  
 var	scene = new THREE.Scene();
@@ -91,10 +91,36 @@ function init() {
 	renderer.setSize(w, h);
 	container.appendChild( renderer.domElement );
 
-	camera.position.z = 450;
+	camera.position.z = 550;
 	camera.position.x = 0;
 	camera.position.y = 0;
 	camera.rotation.z = Math.PI;
+    
+    /*
+      // add subtle blue ambient lighting
+      var ambientLight = new THREE.AmbientLight(0x222233);
+      scene.add(ambientLight);
+      
+      // sun center light source
+      var directionalLight1 = new THREE.PointLight(0xaa9966);
+      directionalLight1.position.set(0, 0, 100);
+      directionalLight1.intensity = 2.1;
+      scene.add(directionalLight1);
+
+
+      // just illuminates sun via spot light
+      var directionalLight2 = new THREE.SpotLight(0xff8800);
+      directionalLight2.position.set(0, 0, 1500);
+      directionalLight2.angle = 3.14/50;
+      directionalLight2.intensity = 1.5;
+      scene.add(directionalLight2);
+
+      // directional lighting (for added detail)
+      var directionalLight3 = new THREE.PointLight(0x777777);
+      directionalLight3.position.set(0, 0, 100);
+      directionalLight3.intensity = .4;
+      scene.add(directionalLight3);
+      */
 }
 
 
@@ -112,12 +138,70 @@ function build_game_elements(){
 		var body_size = ri(3,7);
 
 		var enemy_type = ri(1,4);
-
-		e[i] = new enemy(body_size,ri(2,e_bullet_mat.length-1),ri(3,15),bullet_v,ri(150,200),{x:r(.05*w,-.05*w),y:r(.05*h,-.05*h)}, start_v, enemy_type, 1);
+        var bullet_size = ri(2,3);
+        
+		e[i] = new enemy(body_size,bullet_size,ri(3,15),bullet_v,ri(150,200),{x:r(.05*w,-.05*w),y:r(.05*h,-.05*h)}, start_v, enemy_type, ri(1,2));
 	}
 
 	add_scene_objects();
+    
+    
+  /*
+w = 128;
+h = 128;
+canvas = document.createElement( 'canvas' );
+canvas.width = w; canvas.height = h;
+ctx = canvas.getContext('2d');
+w2 = w/5;
+w3 = w/30;
+    
+ctx.clearRect(0,0,w,h);
+    
+	ctx.strokeStyle = "rgba(50,50,50,1)";
+	ctx.lineWidth = 5;
+    
+	ctx.beginPath();
+      ctx.moveTo(w/2, 0);
+      ctx.lineTo(w/2, h);
+      ctx.stroke();
+    
+    ctx.beginPath();
+      ctx.moveTo(0, h/2);
+      ctx.lineTo(w, h/2);
+      ctx.stroke();
+tex2 = CanvasToTexture(canvas);
 
+tex2.wrapS = tex2.wrapT = THREE.RepeatWrapping;
+tex2.repeat.set( 128*4, 128*4 );
+
+var size1 = 128*8;
+obj3 = [];
+k = 0;
+	
+var mat3 = new THREE.MeshBasicMaterial({ color: 0xaaaaaa, map: tex2});
+var plane = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 1000 ), mat3 );
+scene.add(plane);
+*/
+    
+    /*
+    planets = [];
+    AddPlanet(20,{x:0,y:0,z:0},{r:.9,g:.2,b:0},{x:0,y:.002,z:.001},0,2,planets);
+    function AddPlanet(_r,_p,_c,_rot,_orbit,_detail,_planets){
+        var l = _planets.length;
+
+        var _color = new THREE.Color();
+        _color.setRGB(_c.r, _c.g, _c.b);
+
+        planets.push({
+            mesh: new THREE.Mesh(new THREE.IcosahedronGeometry( _r, _detail ), new THREE.MeshLambertMaterial({shading: THREE.FlatShading, color: _color})),
+            rot:_rot,
+            orbit:_orbit});
+        planets[l].mesh.position = new THREE.Vector3(_p.x, _p.y, _p.z);
+         planets[l].mesh.position.x = 50;
+        
+      scene.add(planets[l].mesh);
+    } */
+   
 }
 
 
@@ -205,22 +289,12 @@ function physics() {
 		s.v.x += s.a.x;
 		s.v.y += s.a.y;
 
+        s.b.rotation.z += .01;
+        
 		// update player
 		if (p.shot_timer > 0) p.shot_timer -= 1;
 
-
-		// bounce off walls!
-		if (scene_objects[i].ai_type == 1){
-			if ( Math.abs(s.b.position.x) > .05*w){
-				s.v.x *= -1;
-			}
-			if ( Math.abs(s.b.position.y) > .05*h){
-				s.v.y *= -1;
-
-			}
-
-		}
-
+        scene_objects[i].update_vel();
 		s.b.position.x += s.v.x;
 		s.b.position.y += s.v.y;
 

@@ -1,10 +1,10 @@
 
-function enemy(body_size,bullet_size, num_bullets, bullet_v, frames_per_pulse, start_loc, start_v, shot_type, ai_type){
+function enemy(body_size,bullet_size, num_bullets, bullet_v, frames_per_pulse, start_loc, start_v, shot_type, movement_type){
 
 	this.e = {body:0, bullets:[]};
 
 	this.frames_per_pulse = frames_per_pulse;
-	this.ai_type = ai_type;
+	this.movement_type = movement_type;
 	this.bullet_size = bullet_size;
 
 
@@ -15,6 +15,8 @@ function enemy(body_size,bullet_size, num_bullets, bullet_v, frames_per_pulse, s
 
 	this.e.body.b.position.x = start_loc.x;
 	this.e.body.b.position.y = start_loc.y;
+    
+    this.e.body.b.rotateZ = .1;
 
 	this.e.body.v.x = start_v.x;
 	this.e.body.v.y = start_v.y;
@@ -65,6 +67,37 @@ function enemy(body_size,bullet_size, num_bullets, bullet_v, frames_per_pulse, s
 		add_scene_objects();
 
 	}
+    
+    
+    this.update_vel = function () {
+     
+        // bounce off walls
+		if (this.movement_type == 1){
+			if ( Math.abs(s.b.position.x) > .05*w){
+				this.e.body.v.x *= -1;
+			}
+			if ( Math.abs(s.b.position.y) > .05*h){
+				this.e.body.v.y *= -1;
+
+			}
+		}
+        
+        // move towards player
+        if (this.movement_type == 2){
+			
+            dir_p = {x:0,y:0};
+            dir_p.x = (p.e.body.b.position.x - this.e.body.b.position.x);
+            dir_p.y = (p.e.body.b.position.y - this.e.body.b.position.y);
+            norm = Math.abs(Math.sqrt( (dir_p.x*dir_p.x + dir_p.y*dir_p.y) ));
+            this.e.body.v.x = dir_p.x/norm*.03;
+            this.e.body.v.y = dir_p.y/norm*.03;
+            
+		}
+        
+        
+        
+        
+    }
 
 	scene_objects.push(this);
 }

@@ -1,26 +1,25 @@
-function CanvasToTexture(_canvas){
-    ctx = _canvas.getContext('2d');
-    _w = _canvas.width;
-    _h = _canvas.height;
-    var imgData=ctx.getImageData(0,0,_w,_h);
-    var imgData2 = new Uint8Array( _w * _h * 4 );
-    for ( var i = 0; i < _w * _h * 4; i ++ ) { imgData2[i] = imgData.data[i]; }
-    var tmp_tex = new THREE.DataTexture( imgData2, _w, _h, THREE.RGBA );
+function CanvasToTexture(canvas){
+    var ctx = canvas.getContext('2d');
+    var w = canvas.width;
+    var h = canvas.height;
+    var imgData = ctx.getImageData(0,0,w,h);
+    var imgData2 = new Uint8Array( w * h * 4 );
+    for ( var i = 0; i < w * h * 4; i ++ ) { imgData2[i] = imgData.data[i]; }
+    var tmp_tex = new THREE.DataTexture( imgData2, w, h, THREE.RGBA );
     tmp_tex.needsUpdate = true;
     return tmp_tex;
 }
 
+function TextureToBasicMaterial(texture){
+    return new THREE.MeshBasicMaterial({ color: new THREE.Color( 1, 1, 1 ), map:texture, transparent: true }); 
+}
 
 function NewRandomMaterial(size){
-
-
 
 	var w = size; var h = size;
 	var canvas = document.createElement( 'canvas' );
 	canvas.width = w; canvas.height = h;
 	var ctx = canvas.getContext('2d');
-	
-	
 	
 	ctx.beginPath();
 	//ctx.fillStyle = "rgba(255,255,255,1)";
@@ -34,10 +33,6 @@ function NewRandomMaterial(size){
 	large_int = ri(1007199254740992,9007199254740992);
     make_identicon(large_int, w/2, h/2, ctx);
 
-    
-  
-
-    
 	ctx.shadowBlur=1;
 	ctx.shadowColor='rgba(255,0,0,.5)';
 	ctx.strokeStyle = 'rgba(255,0,0,1)';
@@ -65,13 +60,8 @@ function NewRandomMaterial(size){
 	ctx.arc( w/2, h/2, w/3.35, 0, Math.PI * 2, true );
 	ctx.stroke();
 
-
-
-	
-	
 	var temp_tex = CanvasToTexture(canvas);
-
-	return new THREE.MeshBasicMaterial({ color: new THREE.Color( 1, 1, 1 ), map:temp_tex, transparent: true }); 
+    return TextureToBasicMaterial(temp_tex);
 }
 
 
@@ -125,22 +115,55 @@ for (var i = 3; i < max_size+3; i++){
 
 
 
-w = 30;
-h = 30;
+w = 60;
+h = 60;
 canvas = document.createElement( 'canvas' );
 canvas.width = w; canvas.height = h;
-ctx = canvas.getContext('2d');
+var ctx = canvas.getContext('2d');
 
+
+
+/*
 ctx.beginPath();
 ctx.fillStyle = "rgba(255,255,255,1)";
 ctx.arc( w/2, h/2, w/2 - 3, 0, Math.PI * 2, true );
-
-ctx.shadowBlur=3;
+ctx.shadowBlur=0;
 ctx.shadowColor="black";
+ctx.fill();
+*/
 
+	
+
+ctx.shadowBlur = 10;
+ctx.shadowColor = "rgba(0,0,0,1)";
+ctx.lineWidth = 5;
+
+ctx.strokeStyle = 'rgba(0,255,255,1)';
+ctx.beginPath();
+ctx.arc( w/2, h/2, (w/2) - 4, 0, Math.PI * 2, true);
+ctx.stroke();
+
+ctx.shadowBlur = 10;
+ctx.shadowColor = "rgba(0dw,255,255,1)";
+
+ctx.strokeStyle = 'rgba(0,255,255,.6)';
+ctx.beginPath();
+ctx.arc( w/2, h/2, (w/2.5) - 4, 0, Math.PI * 2, true );
+ctx.stroke();
+
+ctx.strokeStyle = 'rgba(0,255,255,.4)';
+ctx.beginPath();
+ctx.arc( w/2, h/2, (w/3.3) - 4, 0, Math.PI * 2, true );
+ctx.stroke();
+
+ctx.fillStyle = 'rgba(0,255,255,.2)';
+
+ctx.beginPath();
+ctx.arc( w/2, h/2, w/5.5, 0, Math.PI * 2, true );
 ctx.fill();
 
-p_body_tex = CanvasToTexture(canvas)
+p_body_tex = CanvasToTexture(canvas);
+p_body_mat = TextureToBasicMaterial(p_body_tex);
 
 
 
